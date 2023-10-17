@@ -7,26 +7,53 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+class Usuario(Base):
+    __tablename__ = 'usuarios'
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    nombre_usuario = Column(String(50), unique=True)
+    nombre_completo = Column(String(100))
+    foto_perfil = Column(String)
+    correo = Column(String)    
+    biografia = Column(String)
 
-    def to_dict(self):
-        return {}
+    seguidores = relationship('Seguidores', back_populates='seguido')
+    seguidos = relationship('Seguidores', back_populates='seguidor')
+
+class Publicacion(Base):
+    __tablename__ = 'publicaciones'
+
+    id = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    imagen = Column(String)
+    pie_de_coto = Column(String, default="")    
+
+    usuario = relationship('Usuario', back_populates='publicaciones')
+    comentarios = relationship('Comentario', back_populates='publicacion')
+
+class Comentario(Base):
+    __tablename__ = 'comentarios'
+
+    id = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    publicacion_id = Column(Integer, ForeignKey('publicaciones.id'))
+    texto = Column(String)
+    
+
+    usuario = relationship('Usuario', back_populates='comentarios')
+    publicacion = relationship('Publicacion', back_populates='comentarios')
+
+class Seguidores(Base):
+    __tablename__ = 'seguidores'
+
+    id = Column(Integer, primary_key=True)
+    seguidor_id = Column(Integer, ForeignKey('usuarios.id'))
+    seguido_id = Column(Integer, ForeignKey('usuarios.id'))
+    
+
+    seguidor = relationship('Usuario', foreign_keys=[seguidor_id], back_populates='seguidos')
+    seguido = relationship('Usuario', foreign_keys=[seguido_id], back_populates='seguidores')
+
 
 ## Draw from SQLAlchemy base
 try:
